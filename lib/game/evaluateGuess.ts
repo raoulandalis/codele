@@ -62,7 +62,8 @@ export function evaluateGuess(guess: string, answer: string): GuessEvaluation {
   const answerDigits = answer.split("").map(Number);
   const parityCount = answerDigits.filter((digit) => digit % 2 === 0).length;
   const digitSum = answerDigits.reduce((sum, digit) => sum + digit, 0);
-  const largestDigit = Math.max(...answerDigits);
+  const digitSpread =
+    Math.max(...answerDigits) - Math.min(...answerDigits);
   const composition = getComposition(answer);
   const firstLastParity: FirstLastParity = {
     first: getParity(answerDigits[0]),
@@ -76,7 +77,7 @@ export function evaluateGuess(guess: string, answer: string): GuessEvaluation {
     comparison: getComparison(guess, answer),
     parityCount,
     digitSum,
-    largestDigit,
+    digitSpread,
     composition,
     firstLastParity,
   };

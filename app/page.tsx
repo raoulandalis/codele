@@ -16,12 +16,14 @@ import { MAX_GUESSES } from "@/lib/game/types";
 import {
   createInitialGameState,
   getOrCreateAnonymousId,
-  loadGameState,
+  loadDailyGameState,
+  saveDailyGameState,
   saveGameState,
+  savePracticeGameState,
 } from "@/lib/storage/gameState";
 import { loadStats, recordDailyGameResult } from "@/lib/storage/stats";
-import { RotateCcw } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Calendar, RotateCcw } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface GuessApiResponse {
@@ -36,91 +38,76 @@ interface GuessApiResponse {
   error?: string;
 }
 
+function resolveSavedDaily(today: string) {
+  const saved = loadDailyGameState();
+  if (saved && saved.date === today) {
+    return {
+      game: saved,
+      showResult: saved.status !== "playing",
+      needsFetch: false,
+    };
+  }
+
+  return { game: null, showResult: false, needsFetch: true };
+}
+
 export default function Home() {
-  const [game, setGame] = useState<StoredGameState | null>(null);
+  const today = getLocalDateString();
+  const initialDaily = resolveSavedDaily(today);
+
+  const [game, setGame] = useState<StoredGameState | null>(initialDaily.game);
   const [stats, setStats] = useState(loadStats());
   const [failureReveal, setFailureReveal] = useState<string | null>(null);
   const [showStats, setShowStats] = useState(false);
-  const [showResult, setShowResult] = useState(false);
+  const [showResult, setShowResult] = useState(initialDaily.showResult);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const today = getLocalDateString();
-
-  const initializeDailyGame = useCallback(async () => {
-    const anonymousId = getOrCreateAnonymousId();
-    const saved = loadGameState();
-
-    if (
-      saved &&
-      saved.mode === "daily" &&
-      saved.date === today &&
-      saved.status === "playing"
-    ) {
-      setGame(saved);
-      setIsLoading(false);
-      return;
-    }
-
-    if (
-      saved &&
-      saved.mode === "daily" &&
-      saved.date === today &&
-      saved.status !== "playing"
-    ) {
-      setGame(saved);
-      setShowResult(true);
-      setFailureReveal(null);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/puzzle?date=${today}`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error ?? "Failed to load puzzle");
-      }
-
-      const initial = createInitialGameState({
-        mode: "daily",
-        date: today,
-        puzzleNumber: data.puzzleNumber,
-        anonymousId,
-      });
-
-      setGame(initial);
-      saveGameState(initial);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to load daily puzzle",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [today]);
+  const [isLoading, setIsLoading] = useState(initialDaily.needsFetch);
 
   useEffect(() => {
+    if (!isLoading) return;
+
+    let cancelled = false;
+    const anonymousId = getOrCreateAnonymousId();
+
     void (async () => {
-      const saved = loadGameState();
+      try {
+        const response = await fetch(`/api/puzzle?date=${today}`);
+        const data = await response.json();
 
-      if (saved?.mode === "practice" && saved.status === "playing") {
-        setGame(saved);
-        setIsLoading(false);
-        return;
+        if (!response.ok) {
+          throw new Error(data.error ?? "Failed to load puzzle");
+        }
+
+        const initial = createInitialGameState({
+          mode: "daily",
+          date: today,
+          puzzleNumber: data.puzzleNumber,
+          anonymousId,
+        });
+
+        if (cancelled) return;
+
+        setGame(initial);
+        saveDailyGameState(initial);
+        setShowResult(false);
+        setFailureReveal(null);
+      } catch (error) {
+        if (!cancelled) {
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to load daily puzzle",
+          );
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
-
-      if (saved?.mode === "practice" && saved.status !== "playing") {
-        setGame(saved);
-        setShowResult(true);
-        setIsLoading(false);
-        return;
-      }
-
-      await initializeDailyGame();
     })();
-  }, [initializeDailyGame]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoading, today]);
 
   async function submitDailyGuess(guess: string, current: StoredGameState) {
     const guessIndex = current.currentGuessIndex + 1;
@@ -247,7 +234,7 @@ export default function Home() {
     }
   }
 
-  function handlePracticeReset() {
+  function handlePracticeMode() {
     const anonymousId = getOrCreateAnonymousId();
     const practiceGame = createInitialGameState({
       mode: "practice",
@@ -258,10 +245,22 @@ export default function Home() {
     });
 
     setGame(practiceGame);
-    saveGameState(practiceGame);
+    savePracticeGameState(practiceGame);
     setShowResult(false);
     setFailureReveal(null);
     toast.message("Practice puzzle ready");
+  }
+
+  function handleDailyMode() {
+    const saved = loadDailyGameState();
+    if (saved && saved.date === today) {
+      setGame(saved);
+      setShowResult(saved.status !== "playing");
+      setFailureReveal(null);
+      return;
+    }
+
+    setIsLoading(true);
   }
 
   if (isLoading || !game) {
@@ -273,7 +272,7 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-xl flex-col">
+    <div className="mx-auto flex h-dvh w-full max-w-4xl flex-col">
       <Header
         puzzleNumber={game.puzzleNumber}
         mode={game.mode}
@@ -281,24 +280,37 @@ export default function Home() {
         onStatsClick={() => setShowStats(true)}
       />
 
-      <GameBoard
-        guesses={game.guesses}
-        hints={game.hints}
-        currentGuessIndex={game.currentGuessIndex}
-        status={game.status}
-        onSubmitGuess={handleSubmitGuess}
-        isSubmitting={isSubmitting}
-      />
+      <div className="flex min-h-0 flex-1 flex-col justify-end">
+        <GameBoard
+          guesses={game.guesses}
+          hints={game.hints}
+          currentGuessIndex={game.currentGuessIndex}
+          status={game.status}
+          onSubmitGuess={handleSubmitGuess}
+          isSubmitting={isSubmitting}
+        />
+      </div>
 
-      <div className="mt-auto flex justify-center px-4 pb-8">
-        <button
-          type="button"
-          onClick={handlePracticeReset}
-          className="flex items-center gap-2 rounded-lg border border-border bg-neutral-muted px-4 py-2 text-sm transition-colors hover:bg-neutral"
-        >
-          <RotateCcw className="h-4 w-4" />
-          Practice mode
-        </button>
+      <div className="flex shrink-0 justify-center px-4 pb-6 pt-2">
+        {game.mode === "daily" ? (
+          <button
+            type="button"
+            onClick={handlePracticeMode}
+            className="flex items-center gap-2 rounded-lg border border-border bg-neutral-muted px-4 py-2 text-sm transition-colors hover:bg-neutral"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Practice mode
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleDailyMode}
+            className="flex items-center gap-2 rounded-lg border border-border bg-neutral-muted px-4 py-2 text-sm transition-colors hover:bg-neutral"
+          >
+            <Calendar className="h-4 w-4" />
+            Today&apos;s puzzle
+          </button>
+        )}
       </div>
 
       {showStats && (

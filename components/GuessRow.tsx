@@ -1,21 +1,17 @@
 "use client";
 
 import { getDigitTileClass } from "@/lib/game/digitFeedback";
-import type { Hint, StoredGuess } from "@/lib/game/types";
-import { validateGuess } from "@/lib/game/validateGuess";
-import { Lock } from "lucide-react";
-import { useState, type RefObject } from "react";
-import { toast } from "sonner";
+import type { StoredGuess } from "@/lib/game/types";
+import type { RefObject } from "react";
 
 interface GuessRowProps {
   rowNumber: number;
   guess?: StoredGuess;
-  hint?: Hint;
   isActive: boolean;
-  isLocked: boolean;
-  lockedPreview?: string;
+  inputValue?: string;
   inputRef?: RefObject<HTMLInputElement | null>;
-  onSubmitGuess: (guess: string) => void;
+  onInputChange?: (value: string) => void;
+  onEnter?: () => void;
   isSubmitting: boolean;
 }
 
@@ -28,36 +24,21 @@ const TILE_CLASSES = {
 export function GuessRow({
   rowNumber,
   guess,
-  hint,
   isActive,
-  isLocked,
-  lockedPreview,
+  inputValue = "",
   inputRef,
-  onSubmitGuess,
+  onInputChange,
+  onEnter,
   isSubmitting,
 }: GuessRowProps) {
-  const [inputValue, setInputValue] = useState("");
-
   function handleChange(value: string) {
-    setInputValue(value.replace(/\D/g, "").slice(0, 5));
-  }
-
-  function submitCurrentGuess() {
-    if (isSubmitting || inputValue.length !== 5) return;
-
-    if (!validateGuess(inputValue)) {
-      toast.error("Enter 5 digits — first digit must be 1–9");
-      return;
-    }
-
-    onSubmitGuess(inputValue);
-    setInputValue("");
+    onInputChange?.(value.replace(/\D/g, "").slice(0, 5));
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
       event.preventDefault();
-      submitCurrentGuess();
+      onEnter?.();
     }
   }
 
@@ -67,60 +48,31 @@ export function GuessRow({
 
   return (
     <div className="animate-row-slide-in">
-      <div
-        className={`relative flex items-center gap-2 rounded-lg border px-3 py-3 ${
-          isActive
-            ? "animate-pulse-active border-success/50 bg-neutral-muted"
-            : "border-border bg-neutral-muted/40"
-        }`}
-      >
-        <span className="w-4 font-mono text-xs text-foreground/40">
-          {rowNumber}
-        </span>
+      <div className="relative flex justify-center gap-3">
+        {displayDigits.map((digit, index) => {
+          const tileState = guess
+            ? getDigitTileClass(
+                guess.greenMask,
+                guess.yellowMask ?? [],
+                index,
+              )
+            : null;
 
-        <div className="flex flex-1 justify-center gap-2">
-          {displayDigits.map((digit, index) => {
-            const tileState = guess
-              ? getDigitTileClass(
-                  guess.greenMask,
-                  guess.yellowMask ?? [],
-                  index,
-                )
-              : null;
-
-            return (
-              <div
-                key={index}
-                className={`flex h-11 w-11 items-center justify-center rounded-md border font-mono text-lg ${
-                  tileState
-                    ? TILE_CLASSES[tileState]
-                    : isActive
-                      ? "border-border bg-background text-foreground"
-                      : "border-border/50 bg-background/50 text-foreground/20"
-                }`}
-              >
-                {digit.trim() || "·"}
-              </div>
-            );
-          })}
-        </div>
-
-        {guess && (
-          <span className="min-w-10 text-right font-mono text-xs text-success">
-            {guess.correctPositions}/5
-          </span>
-        )}
-
-        {isLocked && (
-          <div className="absolute inset-0 flex items-center justify-center gap-2 rounded-lg bg-background/70 backdrop-blur-[1px]">
-            <Lock className="h-4 w-4 text-foreground/40" />
-            {lockedPreview && (
-              <span className="text-xs text-foreground/50">
-                Next: {lockedPreview}
-              </span>
-            )}
-          </div>
-        )}
+          return (
+            <div
+              key={index}
+              className={`flex h-14 w-14 items-center justify-center rounded-md border font-mono text-xl sm:h-16 sm:w-16 sm:text-2xl ${
+                tileState
+                  ? TILE_CLASSES[tileState]
+                  : isActive
+                    ? "border-border bg-background text-foreground"
+                    : "border-border/50 bg-background/50 text-foreground/20"
+              }`}
+            >
+              {digit.trim() || "·"}
+            </div>
+          );
+        })}
 
         {isActive && (
           <input
@@ -139,18 +91,6 @@ export function GuessRow({
           />
         )}
       </div>
-
-      {hint && (
-        <p className="animate-hint-fade-in mt-2 pl-9 text-sm text-foreground/60">
-          {hint.text}
-        </p>
-      )}
-
-      {isActive && (
-        <p className="mt-1 pl-9 text-xs text-foreground/40">
-          Press Enter to submit
-        </p>
-      )}
     </div>
   );
 }

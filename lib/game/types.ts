@@ -4,7 +4,7 @@ export type GameStatus = "playing" | "won" | "lost";
 export type HintType =
   | "direction"
   | "parity"
-  | "largest"
+  | "spread"
   | "sum"
   | "composition";
 
@@ -28,7 +28,7 @@ export interface GuessEvaluation {
   comparison: Comparison;
   parityCount: number;
   digitSum: number;
-  largestDigit: number;
+  digitSpread: number;
   composition: Composition;
   firstLastParity: FirstLastParity;
 }
@@ -80,9 +80,9 @@ export const MAX_GUESSES = 6;
 export const HINT_PREVIEW_LABELS: Record<number, string> = {
   1: "Direction",
   2: "Parity",
-  3: "Largest",
-  4: "Sum",
-  5: "Composition",
+  3: "Spread",
+  4: "Composition",
+  5: "Sum",
 };
 
 export const DEFAULT_GUESS_DISTRIBUTION: Record<string, number> = {

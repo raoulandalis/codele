@@ -27,18 +27,18 @@ export function generateHint(
           : `Target has ${evaluation.parityCount} even digits`;
       break;
     case 3:
-      type = "largest";
-      text = `Largest digit in target is ${evaluation.largestDigit}`;
+      type = "spread";
+      text = `Biggest and smallest digits are ${evaluation.digitSpread} apart`;
       break;
     case 4:
-      type = "sum";
-      text = `Sum of target digits is ${evaluation.digitSum}`;
-      break;
-    case 5:
       type = "composition";
       text = evaluation.composition.allUnique
         ? "All digits in target are unique"
         : `Target has ${evaluation.composition.uniqueCount} unique digits`;
+      break;
+    case 5:
+      type = "sum";
+      text = `Sum of target digits is ${evaluation.digitSum}`;
       break;
     default:
       return null;
