@@ -1,8 +1,11 @@
 "use client";
 
+import { getDigitTileClass } from "@/lib/game/digitFeedback";
 import type { Hint, StoredGuess } from "@/lib/game/types";
+import { validateGuess } from "@/lib/game/validateGuess";
 import { Lock } from "lucide-react";
 import { useState, type RefObject } from "react";
+import { toast } from "sonner";
 
 interface GuessRowProps {
   rowNumber: number;
@@ -15,6 +18,12 @@ interface GuessRowProps {
   onSubmitGuess: (guess: string) => void;
   isSubmitting: boolean;
 }
+
+const TILE_CLASSES = {
+  green: "border-success/40 bg-success/15 text-success",
+  yellow: "border-warning/40 bg-warning/15 text-warning",
+  neutral: "border-border bg-background text-foreground/70",
+} as const;
 
 export function GuessRow({
   rowNumber,
@@ -30,12 +39,25 @@ export function GuessRow({
   const [inputValue, setInputValue] = useState("");
 
   function handleChange(value: string) {
-    const digitsOnly = value.replace(/\D/g, "").slice(0, 5);
-    setInputValue(digitsOnly);
+    setInputValue(value.replace(/\D/g, "").slice(0, 5));
+  }
 
-    if (digitsOnly.length === 5 && !isSubmitting) {
-      onSubmitGuess(digitsOnly);
-      setInputValue("");
+  function submitCurrentGuess() {
+    if (isSubmitting || inputValue.length !== 5) return;
+
+    if (!validateGuess(inputValue)) {
+      toast.error("Enter 5 digits — first digit must be 1–9");
+      return;
+    }
+
+    onSubmitGuess(inputValue);
+    setInputValue("");
+  }
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      submitCurrentGuess();
     }
   }
 
@@ -58,15 +80,20 @@ export function GuessRow({
 
         <div className="flex flex-1 justify-center gap-2">
           {displayDigits.map((digit, index) => {
-            const isCorrect = guess?.greenMask[index];
+            const tileState = guess
+              ? getDigitTileClass(
+                  guess.greenMask,
+                  guess.yellowMask ?? [],
+                  index,
+                )
+              : null;
+
             return (
               <div
                 key={index}
                 className={`flex h-11 w-11 items-center justify-center rounded-md border font-mono text-lg ${
-                  guess
-                    ? isCorrect
-                      ? "border-success/40 bg-success/15 text-success"
-                      : "border-border bg-background text-foreground/70"
+                  tileState
+                    ? TILE_CLASSES[tileState]
                     : isActive
                       ? "border-border bg-background text-foreground"
                       : "border-border/50 bg-background/50 text-foreground/20"
@@ -105,6 +132,7 @@ export function GuessRow({
             spellCheck={false}
             value={inputValue}
             onChange={(event) => handleChange(event.target.value)}
+            onKeyDown={handleKeyDown}
             disabled={isSubmitting}
             className="absolute inset-0 cursor-text opacity-0"
             aria-label={`Guess row ${rowNumber}`}
@@ -115,6 +143,12 @@ export function GuessRow({
       {hint && (
         <p className="animate-hint-fade-in mt-2 pl-9 text-sm text-foreground/60">
           {hint.text}
+        </p>
+      )}
+
+      {isActive && (
+        <p className="mt-1 pl-9 text-xs text-foreground/40">
+          Press Enter to submit
         </p>
       )}
     </div>

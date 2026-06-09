@@ -30,6 +30,7 @@ interface GuessApiResponse {
   answer?: string;
   correctPositions: number;
   greenMask: boolean[];
+  yellowMask: boolean[];
   hint?: Hint | null;
   failureReveal?: string | null;
   error?: string;
@@ -165,6 +166,7 @@ export default function Home() {
       answer: current.answer,
       correctPositions: evaluation.correctPositions,
       greenMask: evaluation.greenMask,
+      yellowMask: evaluation.yellowMask,
       hint,
       failureReveal: gameOver && !won ? formatFailureReveal(evaluation) : null,
     };
@@ -189,6 +191,7 @@ export default function Home() {
           {
             value: guess,
             greenMask: data.greenMask,
+            yellowMask: data.yellowMask,
             correctPositions: data.correctPositions,
           },
         ],

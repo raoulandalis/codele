@@ -2,6 +2,7 @@
 
 import type { Hint, StoredGuess } from "@/lib/game/types";
 import { HINT_PREVIEW_LABELS, MAX_GUESSES } from "@/lib/game/types";
+import { DigitTracker } from "./DigitTracker";
 import { GuessRow } from "./GuessRow";
 import { useEffect, useRef } from "react";
 
@@ -31,8 +32,9 @@ export function GameBoard({
   }, [status, isSubmitting, currentGuessIndex]);
 
   return (
-    <div className="flex w-full max-w-xl flex-col gap-3 px-4 py-6">
-      {Array.from({ length: MAX_GUESSES }, (_, index) => {
+    <div className="flex w-full max-w-xl flex-col">
+      <div className="flex flex-col gap-3 px-4 py-6">
+        {Array.from({ length: MAX_GUESSES }, (_, index) => {
         const rowNumber = index + 1;
         const guess = guesses[index];
         const hint = hints.find((item) => item.attemptNumber === rowNumber);
@@ -54,6 +56,8 @@ export function GameBoard({
           />
         );
       })}
+      </div>
+      <DigitTracker guesses={guesses} />
     </div>
   );
 }

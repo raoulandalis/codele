@@ -24,6 +24,7 @@ export interface FirstLastParity {
 export interface GuessEvaluation {
   correctPositions: number;
   greenMask: boolean[];
+  yellowMask: boolean[];
   comparison: Comparison;
   parityCount: number;
   digitSum: number;
@@ -41,6 +42,7 @@ export interface Hint {
 export interface StoredGuess {
   value: string;
   greenMask: boolean[];
+  yellowMask: boolean[];
   correctPositions: number;
 }
 

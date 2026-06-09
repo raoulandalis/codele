@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
         answer: puzzle.answer,
         correctPositions: evaluation.correctPositions,
         greenMask: evaluation.greenMask,
+        yellowMask: evaluation.yellowMask,
         hint,
         failureReveal: !won ? formatFailureReveal(evaluation) : null,
       });
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
       gameOver: false,
       correctPositions: evaluation.correctPositions,
       greenMask: evaluation.greenMask,
+      yellowMask: evaluation.yellowMask,
       hint,
     });
   } catch (error) {

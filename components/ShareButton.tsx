@@ -4,14 +4,20 @@ interface ShareButtonProps {
   game: StoredGameState;
 }
 
-function formatShareLine(greenMask: boolean[]): string {
-  return greenMask.map((isCorrect) => (isCorrect ? "◆" : "◇")).join("");
+function formatShareLine(guess: StoredGameState["guesses"][number]): string {
+  return guess.greenMask
+    .map((isGreen, index) => {
+      if (isGreen) return "◆";
+      if (guess.yellowMask?.[index]) return "◈";
+      return "◇";
+    })
+    .join("");
 }
 
 export function buildShareText(game: StoredGameState): string {
   const guessCount = game.guesses.length;
   const lines = game.guesses.map(
-    (guess, index) => `${index + 1}: ${formatShareLine(guess.greenMask)}`,
+    (guess, index) => `${index + 1}: ${formatShareLine(guess)}`,
   );
 
   return [`Codele #${game.puzzleNumber}`, `${guessCount}/6`, "", ...lines].join(
