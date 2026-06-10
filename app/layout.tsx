@@ -28,9 +28,21 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
-      <body className="flex h-dvh flex-col bg-background text-foreground">
+      <body className="crt-vignette scanlines flex h-dvh flex-col bg-background font-mono text-foreground">
         {children}
-        <Toaster theme="dark" position="top-center" richColors />
+        <Toaster
+          theme="dark"
+          position="top-center"
+          toastOptions={{
+            classNames: {
+              toast:
+                "font-mono !rounded-none !border !border-border !bg-neutral-muted !text-foreground",
+              title: "!text-foreground",
+              description: "!text-foreground-muted",
+              error: "!border-warning/50 !text-warning",
+            },
+          }}
+        />
       </body>
     </html>
   );

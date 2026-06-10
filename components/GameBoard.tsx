@@ -39,7 +39,7 @@ export function GameBoard({
     if (isSubmitting || !isPlaying || inputValue.length !== 5) return;
 
     if (!validateGuess(inputValue)) {
-      toast.error("Enter 5 digits — first digit must be 1–9");
+      toast.error("ERR: require 5 digits, leading digit 1-9");
       return;
     }
 
@@ -85,7 +85,7 @@ export function GameBoard({
               />
               <div className="flex h-14 items-center justify-center md:h-16 md:justify-start md:pl-2">
                 {hint && (
-                  <p className="animate-hint-fade-in text-center text-xs leading-snug text-foreground/60 sm:text-sm md:text-left">
+                  <p className="animate-hint-fade-in text-center text-xs leading-snug text-foreground-muted sm:text-sm md:text-left">
                     {hint.text}
                   </p>
                 )}

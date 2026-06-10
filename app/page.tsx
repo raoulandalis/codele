@@ -248,7 +248,7 @@ export default function Home() {
     savePracticeGameState(practiceGame);
     setShowResult(false);
     setFailureReveal(null);
-    toast.message("Practice puzzle ready");
+    toast.message("OK: practice session initialized");
   }
 
   function handleDailyMode() {
@@ -266,7 +266,9 @@ export default function Home() {
   if (isLoading || !game) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <p className="font-mono text-sm text-foreground/50">Loading case file…</p>
+        <p className="text-sm text-foreground-muted">
+          Connecting to puzzle server…
+        </p>
       </div>
     );
   }
@@ -296,7 +298,7 @@ export default function Home() {
           <button
             type="button"
             onClick={handlePracticeMode}
-            className="flex items-center gap-2 rounded-lg border border-border bg-neutral-muted px-4 py-2 text-sm transition-colors hover:bg-neutral"
+            className="flex items-center gap-2 border border-border bg-neutral-muted px-4 py-2 text-sm transition-colors hover:bg-neutral"
           >
             <RotateCcw className="h-4 w-4" />
             Practice mode
@@ -305,7 +307,7 @@ export default function Home() {
           <button
             type="button"
             onClick={handleDailyMode}
-            className="flex items-center gap-2 rounded-lg border border-border bg-neutral-muted px-4 py-2 text-sm transition-colors hover:bg-neutral"
+            className="flex items-center gap-2 border border-border bg-neutral-muted px-4 py-2 text-sm transition-colors hover:bg-neutral"
           >
             <Calendar className="h-4 w-4" />
             Today&apos;s puzzle

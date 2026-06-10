@@ -10,9 +10,9 @@ interface DigitKeypadProps {
 }
 
 const KEYPAD_BUTTON =
-  "flex h-11 w-11 items-center justify-center rounded-md border font-mono text-base transition-colors sm:h-12 sm:w-12 sm:text-lg";
+  "flex h-11 w-11 items-center justify-center border font-mono text-base transition-colors sm:h-12 sm:w-12 sm:text-lg";
 const KEYPAD_ACTION =
-  "flex h-11 items-center justify-center rounded-md border font-mono transition-colors sm:h-12";
+  "flex h-11 items-center justify-center border font-mono transition-colors sm:h-12";
 
 export function DigitKeypad({
   disabled = false,
@@ -22,7 +22,7 @@ export function DigitKeypad({
 }: DigitKeypadProps) {
   function buttonClassName() {
     return disabled
-      ? "cursor-not-allowed border-border/30 bg-neutral-muted/20 text-foreground/20"
+      ? "cursor-not-allowed border-border/30 bg-neutral-muted/20 text-foreground-muted/30"
       : "border-border bg-neutral-muted text-foreground/80 hover:bg-neutral";
   }
 

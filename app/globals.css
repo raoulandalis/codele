@@ -1,18 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0c0c0e;
-  --foreground: #e8e8ea;
-  --color-neutral: #2a2a30;
-  --color-neutral-muted: #1a1a1f;
-  --color-success: #22c55e;
-  --color-warning: #eab308;
-  --color-border: #33333a;
+  --background: #000000;
+  --foreground: #33ff33;
+  --foreground-muted: #1a8c1a;
+  --color-neutral: #0d2e0d;
+  --color-neutral-muted: #0a1a0a;
+  --color-success: #00ff41;
+  --color-warning: #ffb000;
+  --color-border: #1a5c1a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
   --color-neutral: var(--color-neutral);
   --color-neutral-muted: var(--color-neutral-muted);
   --color-success: var(--color-success);
@@ -25,7 +27,39 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.terminal-glow {
+  text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
+}
+
+.scanlines::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+}
+
+.crt-vignette::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 49;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
 }
 
 @keyframes row-slide-in {
@@ -50,10 +84,34 @@ body {
   }
 }
 
+@keyframes cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
 .animate-row-slide-in {
   animation: row-slide-in 0.25s ease-out;
 }
 
 .animate-hint-fade-in {
   animation: hint-fade-in 0.3s ease-out;
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-cursor-blink {
+    animation: none;
+  }
+
+  .scanlines::before {
+    display: none;
+  }
 }

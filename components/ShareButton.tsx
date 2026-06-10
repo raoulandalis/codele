@@ -7,9 +7,9 @@ interface ShareButtonProps {
 function formatShareLine(guess: StoredGameState["guesses"][number]): string {
   return guess.greenMask
     .map((isGreen, index) => {
-      if (isGreen) return "◆";
-      if (guess.yellowMask?.[index]) return "◈";
-      return "◇";
+      if (isGreen) return "█";
+      if (guess.yellowMask?.[index]) return "▓";
+      return "░";
     })
     .join("");
 }
@@ -17,12 +17,16 @@ function formatShareLine(guess: StoredGameState["guesses"][number]): string {
 export function buildShareText(game: StoredGameState): string {
   const guessCount = game.guesses.length;
   const lines = game.guesses.map(
-    (guess, index) => `${index + 1}: ${formatShareLine(guess)}`,
+    (guess, index) =>
+      `[${String(index + 1).padStart(2, "0")}] ${formatShareLine(guess)}`,
   );
 
-  return [`Codele #${game.puzzleNumber}`, `${guessCount}/6`, "", ...lines].join(
-    "\n",
-  );
+  return [
+    `codele --report #${game.puzzleNumber}`,
+    `attempts: ${guessCount}/6`,
+    "---",
+    ...lines,
+  ].join("\n");
 }
 
 export function ShareButton({ game }: ShareButtonProps) {
@@ -45,9 +49,9 @@ export function ShareButton({ game }: ShareButtonProps) {
     <button
       type="button"
       onClick={handleShare}
-      className="w-full rounded-lg border border-border bg-neutral-muted px-4 py-2.5 text-sm font-medium transition-colors hover:bg-neutral"
+      className="w-full border border-border bg-neutral-muted px-4 py-2.5 text-xs transition-colors hover:bg-neutral sm:text-sm"
     >
-      Share result
+      [ SHARE ]
     </button>
   );
 }

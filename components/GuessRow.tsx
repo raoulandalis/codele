@@ -18,7 +18,7 @@ interface GuessRowProps {
 const TILE_CLASSES = {
   green: "border-success/40 bg-success/15 text-success",
   yellow: "border-warning/40 bg-warning/15 text-warning",
-  neutral: "border-border bg-background text-foreground/70",
+  neutral: "border-border bg-background text-foreground-muted",
 } as const;
 
 export function GuessRow({
@@ -61,12 +61,12 @@ export function GuessRow({
           return (
             <div
               key={index}
-              className={`flex h-14 w-14 items-center justify-center rounded-md border font-mono text-xl sm:h-16 sm:w-16 sm:text-2xl ${
+              className={`flex h-14 w-14 items-center justify-center border font-mono text-xl sm:h-16 sm:w-16 sm:text-2xl ${
                 tileState
                   ? TILE_CLASSES[tileState]
                   : isActive
                     ? "border-border bg-background text-foreground"
-                    : "border-border/50 bg-background/50 text-foreground/20"
+                    : "border-border/50 bg-background/50 text-foreground-muted/30"
               }`}
             >
               {digit.trim() || "·"}
