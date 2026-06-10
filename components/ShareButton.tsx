@@ -5,13 +5,7 @@ interface ShareButtonProps {
 }
 
 function formatShareLine(guess: StoredGameState["guesses"][number]): string {
-  return guess.greenMask
-    .map((isGreen, index) => {
-      if (isGreen) return "█";
-      if (guess.yellowMask?.[index]) return "▓";
-      return "░";
-    })
-    .join("");
+  return guess.greenMask.map((isGreen) => (isGreen ? "█" : "░")).join("");
 }
 
 export function buildShareText(game: StoredGameState): string {

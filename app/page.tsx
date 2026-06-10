@@ -1,5 +1,6 @@
 "use client";
 
+import { DirectionsModal } from "@/components/DirectionsModal";
 import { GameBoard } from "@/components/GameBoard";
 import { Header } from "@/components/Header";
 import { ResultModal } from "@/components/ResultModal";
@@ -50,6 +51,7 @@ export default function Home() {
   const [game, setGame] = useState<StoredGameState | null>(null);
   const [stats, setStats] = useState<typeof bootstrapStats | null>(null);
   const [failureReveal, setFailureReveal] = useState<string | null>(null);
+  const [showDirections, setShowDirections] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showResult, setShowResult] = useState<boolean | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -277,6 +279,7 @@ export default function Home() {
         puzzleNumber={activeGame.puzzleNumber}
         mode={activeGame.mode}
         streak={activeStats.currentStreak}
+        onDirectionsClick={() => setShowDirections(true)}
         onStatsClick={() => setShowStats(true)}
       />
 
@@ -312,6 +315,10 @@ export default function Home() {
           </button>
         )}
       </div>
+
+      {showDirections && (
+        <DirectionsModal onClose={() => setShowDirections(false)} />
+      )}
 
       {showStats && (
         <StatsModal

@@ -4,6 +4,7 @@ import { Delete } from "lucide-react";
 
 interface DigitKeypadProps {
   disabled?: boolean;
+  actionsDisabled?: boolean;
   onDigit: (digit: number) => void;
   onBackspace: () => void;
   onEnter: () => void;
@@ -16,12 +17,19 @@ const KEYPAD_ACTION =
 
 export function DigitKeypad({
   disabled = false,
+  actionsDisabled = false,
   onDigit,
   onBackspace,
   onEnter,
 }: DigitKeypadProps) {
-  function buttonClassName() {
+  function digitClassName() {
     return disabled
+      ? "cursor-not-allowed border-border/30 bg-neutral-muted/20 text-foreground-muted/30"
+      : "border-border bg-neutral-muted text-foreground/80 hover:bg-neutral";
+  }
+
+  function actionClassName() {
+    return disabled || actionsDisabled
       ? "cursor-not-allowed border-border/30 bg-neutral-muted/20 text-foreground-muted/30"
       : "border-border bg-neutral-muted text-foreground/80 hover:bg-neutral";
   }
@@ -33,7 +41,7 @@ export function DigitKeypad({
         type="button"
         disabled={disabled}
         onClick={() => onDigit(digit)}
-        className={`${KEYPAD_BUTTON} ${buttonClassName()}`}
+        className={`${KEYPAD_BUTTON} ${digitClassName()}`}
         aria-label={`Digit ${digit}`}
       >
         {digit}
@@ -52,18 +60,18 @@ export function DigitKeypad({
       <div className="flex w-full max-w-[15.5rem] justify-center gap-2.5 sm:max-w-[17rem] sm:gap-3">
         <button
           type="button"
-          disabled={disabled}
+          disabled={disabled || actionsDisabled}
           onClick={onBackspace}
-          className={`${KEYPAD_ACTION} w-11 sm:w-12 ${buttonClassName()}`}
+          className={`${KEYPAD_ACTION} w-11 sm:w-12 ${actionClassName()}`}
           aria-label="Backspace"
         >
           <Delete className="h-5 w-5" />
         </button>
         <button
           type="button"
-          disabled={disabled}
+          disabled={disabled || actionsDisabled}
           onClick={onEnter}
-          className={`${KEYPAD_ACTION} min-w-[7.5rem] flex-1 px-4 text-xs sm:min-w-[8.5rem] sm:text-sm ${buttonClassName()}`}
+          className={`${KEYPAD_ACTION} min-w-[7.5rem] flex-1 px-4 text-xs sm:min-w-[8.5rem] sm:text-sm ${actionClassName()}`}
         >
           Enter
         </button>

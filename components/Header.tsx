@@ -1,9 +1,10 @@
-import { BarChart3, Flame } from "lucide-react";
+import { BarChart3, Flame, Info } from "lucide-react";
 
 interface HeaderProps {
   puzzleNumber: number;
   mode: "daily" | "practice";
   streak: number;
+  onDirectionsClick: () => void;
   onStatsClick: () => void;
 }
 
@@ -11,6 +12,7 @@ export function Header({
   puzzleNumber,
   mode,
   streak,
+  onDirectionsClick,
   onStatsClick,
 }: HeaderProps) {
   return (
@@ -28,6 +30,14 @@ export function Header({
           <Flame className="h-4 w-4 text-success" />
           <span>{streak}</span>
         </div>
+        <button
+          type="button"
+          onClick={onDirectionsClick}
+          className="border border-border bg-neutral-muted p-2 transition-colors hover:bg-neutral"
+          aria-label="How to play"
+        >
+          <Info className="h-4 w-4" />
+        </button>
         <button
           type="button"
           onClick={onStatsClick}

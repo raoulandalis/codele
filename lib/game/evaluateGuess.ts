@@ -26,38 +26,13 @@ function getComposition(answer: string): Composition {
   };
 }
 
-function computePositionMasks(guess: string, answer: string) {
-  const greenMask = guess.split("").map((digit, index) => digit === answer[index]);
-  const yellowMask = Array.from({ length: 5 }, () => false);
-  const remainingCounts = new Map<string, number>();
-
-  for (const digit of answer) {
-    remainingCounts.set(digit, (remainingCounts.get(digit) ?? 0) + 1);
-  }
-
-  for (let index = 0; index < 5; index++) {
-    if (greenMask[index]) {
-      const digit = guess[index];
-      remainingCounts.set(digit, (remainingCounts.get(digit) ?? 0) - 1);
-    }
-  }
-
-  for (let index = 0; index < 5; index++) {
-    if (greenMask[index]) continue;
-
-    const digit = guess[index];
-    const remaining = remainingCounts.get(digit) ?? 0;
-    if (remaining > 0) {
-      yellowMask[index] = true;
-      remainingCounts.set(digit, remaining - 1);
-    }
-  }
-
-  return { greenMask, yellowMask };
+function computeGreenMask(guess: string, answer: string) {
+  return guess.split("").map((digit, index) => digit === answer[index]);
 }
 
 export function evaluateGuess(guess: string, answer: string): GuessEvaluation {
-  const { greenMask, yellowMask } = computePositionMasks(guess, answer);
+  const greenMask = computeGreenMask(guess, answer);
+  const yellowMask = Array.from({ length: 5 }, () => false);
   const correctPositions = greenMask.filter(Boolean).length;
   const answerDigits = answer.split("").map(Number);
   const parityCount = answerDigits.filter((digit) => digit % 2 === 0).length;

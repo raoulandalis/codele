@@ -106,8 +106,38 @@ body {
   animation: cursor-blink 1s step-end infinite;
 }
 
+@keyframes decrypt-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.decrypt-tile {
+  border-color: rgba(51, 255, 51, 0.45);
+  background: rgba(13, 46, 13, 0.85);
+  color: var(--foreground);
+  text-shadow: 0 0 10px rgba(51, 255, 51, 0.5);
+  animation: decrypt-flicker 0.18s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-cursor-blink {
+    animation: none;
+  }
+
+  .animate-row-slide-in {
+    animation: none;
+  }
+
+  .animate-hint-fade-in {
+    animation: none;
+  }
+
+  .decrypt-tile {
     animation: none;
   }
 

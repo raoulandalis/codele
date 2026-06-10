@@ -1,9 +1,7 @@
 export function getDigitTileClass(
   greenMask: boolean[],
-  yellowMask: boolean[],
   index: number,
-): "green" | "yellow" | "neutral" {
+): "green" | "neutral" {
   if (greenMask[index]) return "green";
-  if (yellowMask?.[index]) return "yellow";
   return "neutral";
 }
