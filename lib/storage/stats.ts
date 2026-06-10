@@ -3,7 +3,7 @@ import type { StoredStats } from "@/lib/game/types";
 
 const STATS_KEY = "codele:stats";
 
-const DEFAULT_STATS: StoredStats = {
+export const DEFAULT_STATS: StoredStats = {
   gamesPlayed: 0,
   gamesWon: 0,
   currentStreak: 0,

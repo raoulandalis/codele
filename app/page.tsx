@@ -21,7 +21,11 @@ import {
   saveGameState,
   savePracticeGameState,
 } from "@/lib/storage/gameState";
-import { loadStats, recordDailyGameResult } from "@/lib/storage/stats";
+import {
+  useDailyBootstrap,
+  useStatsBootstrap,
+} from "@/lib/hooks/useClientStorage";
+import { recordDailyGameResult } from "@/lib/storage/stats";
 import { Calendar, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -38,33 +42,26 @@ interface GuessApiResponse {
   error?: string;
 }
 
-function resolveSavedDaily(today: string) {
-  const saved = loadDailyGameState();
-  if (saved && saved.date === today) {
-    return {
-      game: saved,
-      showResult: saved.status !== "playing",
-      needsFetch: false,
-    };
-  }
-
-  return { game: null, showResult: false, needsFetch: true };
-}
-
 export default function Home() {
   const today = getLocalDateString();
-  const initialDaily = resolveSavedDaily(today);
+  const bootstrap = useDailyBootstrap();
+  const bootstrapStats = useStatsBootstrap();
 
-  const [game, setGame] = useState<StoredGameState | null>(initialDaily.game);
-  const [stats, setStats] = useState(loadStats());
+  const [game, setGame] = useState<StoredGameState | null>(null);
+  const [stats, setStats] = useState<typeof bootstrapStats | null>(null);
   const [failureReveal, setFailureReveal] = useState<string | null>(null);
   const [showStats, setShowStats] = useState(false);
-  const [showResult, setShowResult] = useState(initialDaily.showResult);
+  const [showResult, setShowResult] = useState<boolean | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(initialDaily.needsFetch);
+  const [isLoading, setIsLoading] = useState<boolean | null>(null);
+
+  const activeGame = game ?? bootstrap.game;
+  const activeStats = stats ?? bootstrapStats;
+  const activeShowResult = showResult ?? bootstrap.showResult;
+  const activeLoading = isLoading ?? bootstrap.needsFetch;
 
   useEffect(() => {
-    if (!isLoading) return;
+    if (!activeLoading || activeGame) return;
 
     let cancelled = false;
     const anonymousId = getOrCreateAnonymousId();
@@ -107,7 +104,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [isLoading, today]);
+  }, [activeLoading, activeGame, today]);
 
   async function submitDailyGuess(guess: string, current: StoredGameState) {
     const guessIndex = current.currentGuessIndex + 1;
@@ -160,21 +157,21 @@ export default function Home() {
   }
 
   async function handleSubmitGuess(guess: string) {
-    if (!game || game.status !== "playing" || isSubmitting) return;
+    if (!activeGame || activeGame.status !== "playing" || isSubmitting) return;
 
     setIsSubmitting(true);
 
     try {
       const data =
-        game.mode === "daily"
-          ? await submitDailyGuess(guess, game)
-          : submitPracticeGuess(guess, game);
+        activeGame.mode === "daily"
+          ? await submitDailyGuess(guess, activeGame)
+          : submitPracticeGuess(guess, activeGame);
 
-      const guessIndex = game.currentGuessIndex + 1;
+      const guessIndex = activeGame.currentGuessIndex + 1;
       const nextGame: StoredGameState = {
-        ...game,
+        ...activeGame,
         guesses: [
-          ...game.guesses,
+          ...activeGame.guesses,
           {
             value: guess,
             greenMask: data.greenMask,
@@ -182,7 +179,7 @@ export default function Home() {
             correctPositions: data.correctPositions,
           },
         ],
-        hints: data.hint ? [...game.hints, data.hint] : game.hints,
+        hints: data.hint ? [...activeGame.hints, data.hint] : activeGame.hints,
         currentGuessIndex: guessIndex,
       };
 
@@ -197,10 +194,10 @@ export default function Home() {
         setGame(finished);
         saveGameState(finished);
 
-        if (game.mode === "daily") {
+        if (activeGame.mode === "daily") {
           setFailureReveal(data.failureReveal ?? null);
           const updatedStats = recordDailyGameResult(
-            game.date,
+            activeGame.date,
             Boolean(data.won),
           );
           setStats(updatedStats);
@@ -209,7 +206,7 @@ export default function Home() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              date: game.date,
+              date: activeGame.date,
               won: data.won,
               guessCount: guessIndex,
             }),
@@ -245,6 +242,7 @@ export default function Home() {
     });
 
     setGame(practiceGame);
+    setIsLoading(false);
     savePracticeGameState(practiceGame);
     setShowResult(false);
     setFailureReveal(null);
@@ -263,7 +261,7 @@ export default function Home() {
     setIsLoading(true);
   }
 
-  if (isLoading || !game) {
+  if (activeLoading || !activeGame) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <p className="text-sm text-foreground-muted">
@@ -276,25 +274,25 @@ export default function Home() {
   return (
     <div className="mx-auto flex h-dvh w-full max-w-4xl flex-col">
       <Header
-        puzzleNumber={game.puzzleNumber}
-        mode={game.mode}
-        streak={stats.currentStreak}
+        puzzleNumber={activeGame.puzzleNumber}
+        mode={activeGame.mode}
+        streak={activeStats.currentStreak}
         onStatsClick={() => setShowStats(true)}
       />
 
       <div className="flex min-h-0 flex-1 flex-col justify-end">
         <GameBoard
-          guesses={game.guesses}
-          hints={game.hints}
-          currentGuessIndex={game.currentGuessIndex}
-          status={game.status}
+          guesses={activeGame.guesses}
+          hints={activeGame.hints}
+          currentGuessIndex={activeGame.currentGuessIndex}
+          status={activeGame.status}
           onSubmitGuess={handleSubmitGuess}
           isSubmitting={isSubmitting}
         />
       </div>
 
       <div className="flex shrink-0 justify-center px-4 pb-6 pt-2">
-        {game.mode === "daily" ? (
+        {activeGame.mode === "daily" ? (
           <button
             type="button"
             onClick={handlePracticeMode}
@@ -316,12 +314,15 @@ export default function Home() {
       </div>
 
       {showStats && (
-        <StatsModal stats={stats} onClose={() => setShowStats(false)} />
+        <StatsModal
+          stats={activeStats}
+          onClose={() => setShowStats(false)}
+        />
       )}
 
-      {showResult && (
+      {activeShowResult && (
         <ResultModal
-          game={game}
+          game={activeGame}
           failureReveal={failureReveal}
           onClose={() => setShowResult(false)}
         />

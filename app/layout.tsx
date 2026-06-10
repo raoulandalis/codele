@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} dark h-full bg-background antialiased`}
     >
       <body className="crt-vignette scanlines flex h-dvh flex-col bg-background font-mono text-foreground">
         {children}
