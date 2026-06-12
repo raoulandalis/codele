@@ -265,7 +265,7 @@ export default function Home() {
 
   if (activeLoading || !activeGame) {
     return (
-      <div className="flex flex-1 items-center justify-center">
+      <div className="flex min-h-dvh items-center justify-center">
         <p className="text-sm text-foreground-muted">
           Connecting to puzzle server…
         </p>
@@ -274,7 +274,7 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-4xl flex-col">
+    <div className="mx-auto flex min-h-dvh w-full max-w-4xl flex-col">
       <Header
         puzzleNumber={activeGame.puzzleNumber}
         mode={activeGame.mode}
@@ -283,7 +283,7 @@ export default function Home() {
         onStatsClick={() => setShowStats(true)}
       />
 
-      <div className="flex min-h-0 flex-1 flex-col justify-end">
+      <div className="mt-auto">
         <GameBoard
           guesses={activeGame.guesses}
           hints={activeGame.hints}

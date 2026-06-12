@@ -16,7 +16,7 @@ export function Header({
   onStatsClick,
 }: HeaderProps) {
   return (
-    <header className="flex w-full max-w-4xl items-center justify-between border-b border-border px-4 py-4">
+    <header className="flex w-full max-w-4xl shrink-0 items-center justify-between border-b border-border bg-background px-4 py-4">
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.3em] text-foreground-muted">
           Codele
