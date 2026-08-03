@@ -3,6 +3,7 @@
 import { DirectionsModal } from "@/components/DirectionsModal";
 import { GameBoard } from "@/components/GameBoard";
 import { Header } from "@/components/Header";
+import { IntroScreen } from "@/components/IntroScreen";
 import { ResultModal } from "@/components/ResultModal";
 import { StatsModal } from "@/components/StatsModal";
 import { evaluateGuess, isWin } from "@/lib/game/evaluateGuess";
@@ -56,14 +57,17 @@ export default function Home() {
   const [showResult, setShowResult] = useState<boolean | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean | null>(null);
+  const [hasEntered, setHasEntered] = useState<boolean | null>(null);
 
   const activeGame = game ?? bootstrap.game;
   const activeStats = stats ?? bootstrapStats;
   const activeShowResult = showResult ?? bootstrap.showResult;
-  const activeLoading = isLoading ?? bootstrap.needsFetch;
+  const activeHasEntered = hasEntered ?? Boolean(bootstrap.game);
+  const activeLoading =
+    activeHasEntered && (isLoading ?? bootstrap.needsFetch);
 
   useEffect(() => {
-    if (!activeLoading || activeGame) return;
+    if (!activeHasEntered || !activeLoading || activeGame) return;
 
     let cancelled = false;
     const anonymousId = getOrCreateAnonymousId();
@@ -106,7 +110,11 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [activeLoading, activeGame, today]);
+  }, [activeHasEntered, activeLoading, activeGame, today]);
+
+  function handlePlay() {
+    setHasEntered(true);
+  }
 
   async function submitDailyGuess(guess: string, current: StoredGameState) {
     const guessIndex = current.currentGuessIndex + 1;
@@ -261,6 +269,20 @@ export default function Home() {
     }
 
     setIsLoading(true);
+  }
+
+  if (!activeHasEntered) {
+    return (
+      <>
+        <IntroScreen
+          onPlay={handlePlay}
+          onDirectionsClick={() => setShowDirections(true)}
+        />
+        {showDirections && (
+          <DirectionsModal onClose={() => setShowDirections(false)} />
+        )}
+      </>
+    );
   }
 
   if (activeLoading || !activeGame) {

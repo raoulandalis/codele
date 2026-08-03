@@ -1,4 +1,11 @@
+"use client";
+
+import {
+  formatCountdown,
+  getMsUntilNextLocalMidnight,
+} from "@/lib/game/nextPuzzleCountdown";
 import type { StoredGameState } from "@/lib/game/types";
+import { useEffect, useState } from "react";
 import { ShareButton } from "./ShareButton";
 
 interface ResultModalProps {
@@ -21,6 +28,21 @@ export function ResultModal({
   onClose,
 }: ResultModalProps) {
   const won = game.status === "won";
+  const showCountdown = game.mode === "daily" && game.status !== "playing";
+  const [countdownMs, setCountdownMs] = useState(() =>
+    getMsUntilNextLocalMidnight(),
+  );
+
+  useEffect(() => {
+    if (!showCountdown) return;
+
+    setCountdownMs(getMsUntilNextLocalMidnight());
+    const id = window.setInterval(() => {
+      setCountdownMs(getMsUntilNextLocalMidnight());
+    }, 1000);
+
+    return () => window.clearInterval(id);
+  }, [showCountdown]);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4">
@@ -61,6 +83,15 @@ export function ResultModal({
               </p>
             </div>
           </div>
+
+          {showCountdown && (
+            <div className="border border-border bg-neutral-muted p-3 text-center">
+              <p className="text-foreground-muted">NEXT PUZZLE IN</p>
+              <p className="terminal-glow mt-1 font-mono text-lg text-foreground">
+                {formatCountdown(countdownMs)}
+              </p>
+            </div>
+          )}
 
           {!won && failureReveal && (
             <p className="border border-border bg-neutral-muted px-3 py-2 text-foreground-muted">
