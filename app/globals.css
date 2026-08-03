@@ -124,6 +124,10 @@ body {
   animation: decrypt-flicker 0.18s ease-in-out infinite;
 }
 
+.intro-title-scramble {
+  animation: decrypt-flicker 0.18s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-cursor-blink {
     animation: none;
@@ -138,6 +142,10 @@ body {
   }
 
   .decrypt-tile {
+    animation: none;
+  }
+
+  .intro-title-scramble {
     animation: none;
   }
 
