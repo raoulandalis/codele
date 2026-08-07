@@ -104,7 +104,7 @@ export function GuessRow({
             onChange={(event) => handleChange(event.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isSubmitting}
-            className="absolute inset-0 cursor-text opacity-0"
+            className="absolute inset-0 cursor-text opacity-0 max-md:pointer-events-none"
             aria-label={`Guess row ${rowNumber}`}
           />
         )}

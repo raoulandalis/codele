@@ -43,7 +43,9 @@ export function GameBoard({
   const isInteractionLocked = isSubmitting || isDecrypting;
 
   useEffect(() => {
-    if (isPlaying && !isInteractionLocked && !showTriedDigits) {
+    if (!isPlaying || isInteractionLocked || showTriedDigits) return;
+    // Desktop: focus hidden input for hardware keyboard. Mobile uses compact keypad.
+    if (window.matchMedia("(min-width: 768px)").matches) {
       inputRef.current?.focus();
     }
   }, [isPlaying, isInteractionLocked, currentGuessIndex, showTriedDigits]);
@@ -167,8 +169,16 @@ export function GameBoard({
           );
         })}
 
-        {/* Mobile: tried-digits trigger under the board */}
-        <div className="mt-2 flex justify-center md:hidden">
+        {/* Mobile: compact keypad + tried-digits trigger */}
+        <div className="mt-2 flex flex-col items-center gap-2 md:hidden">
+          <DigitKeypad
+            variant="compact"
+            disabled={!isPlaying}
+            actionsDisabled={isInteractionLocked}
+            onDigit={appendDigit}
+            onBackspace={handleBackspace}
+            onEnter={submitCurrentGuess}
+          />
           <button
             type="button"
             onClick={() => setShowTriedDigits(true)}
