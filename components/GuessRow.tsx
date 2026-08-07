@@ -2,7 +2,7 @@
 
 import { getDigitTileClass } from "@/lib/game/digitFeedback";
 import type { StoredGuess } from "@/lib/game/types";
-import type { RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 
 interface GuessRowProps {
   rowNumber: number;
@@ -38,6 +38,13 @@ export function GuessRow({
   isScrambling = false,
   hideFeedback = false,
 }: GuessRowProps) {
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isActive || isRowLocked) return;
+    rowRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [isActive, isRowLocked, rowNumber]);
+
   function handleChange(value: string) {
     onInputChange?.(value.replace(/\D/g, "").slice(0, 5));
   }
@@ -57,7 +64,7 @@ export function GuessRow({
       : guess?.value.split("") ?? Array(5).fill("");
 
   return (
-    <div className="animate-row-slide-in">
+    <div ref={rowRef} className="animate-row-slide-in">
       <div className="relative flex justify-center gap-3">
         {displayDigits.map((digit, index) => {
           const tileState =
@@ -89,6 +96,7 @@ export function GuessRow({
             ref={inputRef}
             type="text"
             inputMode="numeric"
+            enterKeyHint="go"
             autoComplete="off"
             autoCorrect="off"
             spellCheck={false}

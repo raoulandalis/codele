@@ -305,7 +305,7 @@ export default function Home() {
         onStatsClick={() => setShowStats(true)}
       />
 
-      <div className="mt-auto">
+      <div className="my-auto md:mt-auto md:mb-0">
         <GameBoard
           guesses={activeGame.guesses}
           hints={activeGame.hints}

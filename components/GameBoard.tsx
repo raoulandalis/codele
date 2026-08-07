@@ -6,7 +6,8 @@ import { useDecryptionAnimation } from "@/lib/hooks/useDecryptionAnimation";
 import { getUsedDigits } from "@/lib/game/keypadState";
 import { validateGuess } from "@/lib/game/validateGuess";
 import { DigitKeypad } from "./DigitKeypad";
-import { DigitTracker } from "./DigitTracker";
+import { DigitTracker, formatTriedDigits } from "./DigitTracker";
+import { DigitTrackerSheet } from "./DigitTrackerSheet";
 import { GuessRow } from "./GuessRow";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ export function GameBoard({
 }: GameBoardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [inputValue, setInputValue] = useState("");
+  const [showTriedDigits, setShowTriedDigits] = useState(false);
   const {
     decryption,
     isDecrypting,
@@ -41,10 +43,10 @@ export function GameBoard({
   const isInteractionLocked = isSubmitting || isDecrypting;
 
   useEffect(() => {
-    if (isPlaying && !isInteractionLocked) {
+    if (isPlaying && !isInteractionLocked && !showTriedDigits) {
       inputRef.current?.focus();
     }
-  }, [isPlaying, isInteractionLocked, currentGuessIndex]);
+  }, [isPlaying, isInteractionLocked, currentGuessIndex, showTriedDigits]);
 
   useEffect(() => {
     if (!decryption || decryption.phase !== "settled") return;
@@ -92,6 +94,10 @@ export function GameBoard({
     setInputValue((current) => current.slice(0, -1));
   }
 
+  function handleCloseTriedDigits() {
+    setShowTriedDigits(false);
+  }
+
   const usedDigits = useMemo(() => {
     const used = getUsedDigits(guesses);
 
@@ -108,6 +114,8 @@ export function GameBoard({
     return used;
   }, [decryption, guesses, inputValue]);
 
+  const triedPreview = formatTriedDigits(usedDigits);
+
   return (
     <div className="flex w-full flex-col items-center px-4 pb-2">
       <div className="flex w-full max-w-4xl flex-col gap-2 sm:gap-2.5">
@@ -121,7 +129,6 @@ export function GameBoard({
             rowNumber === currentGuessIndex + 1 &&
             !isDecryptingRow;
           const hideFeedback = isDecryptingRow;
-          const showHint = hint && !hideFeedback;
 
           return (
             <div
@@ -147,18 +154,33 @@ export function GameBoard({
                 onEnter={isActive ? submitCurrentGuess : undefined}
                 isSubmitting={isInteractionLocked}
               />
-              <div className="flex h-14 items-center justify-center md:h-16 md:justify-start md:pl-2">
-                {showHint && (
+              {hint && !hideFeedback ? (
+                <div className="mt-1 flex h-14 items-center justify-center md:mt-0 md:h-16 md:justify-start md:pl-2">
                   <p className="animate-hint-fade-in text-center text-xs leading-snug text-foreground-muted sm:text-sm md:text-left">
                     {hint.text}
                   </p>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="hidden md:block md:h-16" />
+              )}
             </div>
           );
         })}
 
-        <div className="mt-2 flex items-start justify-center gap-3 sm:mt-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-x-6">
+        {/* Mobile: tried-digits trigger under the board */}
+        <div className="mt-2 flex justify-center md:hidden">
+          <button
+            type="button"
+            onClick={() => setShowTriedDigits(true)}
+            className="border border-border bg-neutral-muted px-3 py-2 font-mono text-[10px] text-foreground-muted transition-colors hover:bg-neutral hover:text-foreground sm:text-xs"
+            aria-label={`Open tried digits: ${triedPreview}`}
+          >
+            $ tried_digits · {triedPreview}
+          </button>
+        </div>
+
+        {/* Desktop: keypad + inline tracker */}
+        <div className="mt-2 hidden items-start justify-center gap-3 sm:mt-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-x-6">
           <div className="hidden md:block" />
           <DigitKeypad
             disabled={!isPlaying}
@@ -172,6 +194,13 @@ export function GameBoard({
           </div>
         </div>
       </div>
+
+      {showTriedDigits && (
+        <DigitTrackerSheet
+          usedDigits={usedDigits}
+          onClose={handleCloseTriedDigits}
+        />
+      )}
     </div>
   );
 }

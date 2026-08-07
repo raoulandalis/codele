@@ -1,8 +1,9 @@
 interface DigitTrackerProps {
   usedDigits: Set<number>;
+  fullWidth?: boolean;
 }
 
-function formatTriedDigits(usedDigits: Set<number>): string {
+export function formatTriedDigits(usedDigits: Set<number>): string {
   if (usedDigits.size === 0) return "—";
 
   return [...usedDigits]
@@ -10,12 +11,19 @@ function formatTriedDigits(usedDigits: Set<number>): string {
     .join(" ");
 }
 
-export function DigitTracker({ usedDigits }: DigitTrackerProps) {
+export function DigitTracker({
+  usedDigits,
+  fullWidth = false,
+}: DigitTrackerProps) {
   const formatted = formatTriedDigits(usedDigits);
 
   return (
     <aside
-      className="w-full max-w-[11rem] shrink-0 border border-border bg-neutral-muted px-2 py-2 font-mono text-[10px] leading-tight sm:max-w-[12rem] sm:px-3 sm:py-2.5 sm:text-xs md:w-28"
+      className={
+        fullWidth
+          ? "w-full border border-border bg-neutral-muted px-3 py-2.5 font-mono text-xs leading-tight"
+          : "w-full max-w-[11rem] shrink-0 border border-border bg-neutral-muted px-2 py-2 font-mono text-[10px] leading-tight sm:max-w-[12rem] sm:px-3 sm:py-2.5 sm:text-xs md:w-28"
+      }
       aria-live="polite"
       aria-label={`Digits tried: ${formatted}`}
     >

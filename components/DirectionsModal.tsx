@@ -49,6 +49,10 @@ export function DirectionsModal({ onClose }: DirectionsModalProps) {
             </p>
           </div>
           <p>Each guess unlocks a clue. Win by getting all greens.</p>
+          <p className="md:hidden">
+            On phone, tap the tiles and use the number keyboard; Go / Enter
+            submits.
+          </p>
         </div>
       </div>
     </div>
